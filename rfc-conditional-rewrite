@@ -26,13 +26,15 @@ Assimilation:
 Target:
 	Languages with C-style or compatible conditional statements.
 
+Example:
+
+// This example code is written in Java extended for conditional rewrites for clarity and generality.
+
 // false: disable
 // true: default
 // if (conditional, action, qualifier) {
 //     // code
 // }
-
-Example:
 
 // convert array to string
 int[] arr = new int[] {1, 3, 5, 7};
