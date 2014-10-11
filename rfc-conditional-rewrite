@@ -1,0 +1,60 @@
+RFC: If-disables and defaults
+
+Purpose:
+	Disable: Prevents a conditional from being checked again while in the same block of code.
+	Default: Defaults to a conditional block while in the same block of code.
+
+Implementation: Temporarily rewrites jump/goto instruction arguments for conditional jumps, where the rewritten addresses are restored upon scope exit.
+
+Usage: A boolean expression is passed as a second argument to an if/else-if block or an argument to an else block to specify whether a disable (false) or default (true) is desired. A boolean expression is passed as a third argument to be checked upon the condition being met, to determine whether the conditional is to be disabled or defaulted.
+
+Semantics:
+	Disable: The disable expression will be checked once the conditional is met, and the conditional block will be disabled if the disable expression evaluates to true.
+	Default: The default expression will be checked once the conditional is met, and the conditional block will be executed by default if the default expression evaluates to true.
+
+	Once a conditional and all of its related conditionals are disabled, if any, the default statement will be executed, if any. When an if statement and all of its else if statements are disabled, the else will be executed by default, unless it is also disabled.
+
+Caveat:
+	Addresses will be rewritten, so code called from multiple threads will experience racey or unexpected behavior.
+	Possible Solution: Limited use as syntactic sugar instead (as for, else if), which the compiler will turn into prefixed, postfixed, or inserted code.
+
+Suggestion: This method may also be applied to switch structures. An extended implementation may perform a logical AND on the conditional with the disable or default expression to produce an evaluatable value for more semantic significance in some languages, in which operators are overloaded, or boolean expressions are evaluated as truey/falsey.
+
+Assimilation:
+	Allowance for this feature could be passed as a compiler option (suggestion: [as a GCC plugin] -fcondition-rewrite), until it is more generally accepted.
+
+Target:
+	Languages with C-style or compatible conditional statements.
+
+// false: disable
+// true: default
+// if (conditional, action, qualifier) {
+//     // code
+// }
+
+Example:
+
+// convert array to string
+int[] arr = new int[] {1, 3, 5, 7};
+String output;
+for (int i = 0; i < arr.length; i++) {
+	// defaults to conditional after index is not first index
+	if (i != 0, true, true) {
+		output += " ";
+	}
+	output += arr[i];
+}
+
+// find number of composites from 2 to k
+// intrinsically exit the loop if no other code in executable block instead of using an ambiguous break
+int count = 0;
+for (int i = 2; i <= k; i++) {
+	for (int j = 2; j <= Math.sqrt(i); j++) {
+		// increments count and disables if i is composite
+		if (i % j == 0, false, true) {
+			count++;
+		}
+		// after disabling, intrisically exits current block
+	}
+}
+
